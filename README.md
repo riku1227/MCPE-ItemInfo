@@ -1,0 +1,2 @@
+# MCPE-ItemInfo
+showTipMessageで持っているアイテムの情報を表示するやつ
