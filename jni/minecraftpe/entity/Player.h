@@ -1,11 +1,10 @@
 #pragma once
 
-#include "Mob.h"
+class ItemInstance;
 
-class Player : public Mob
-{
+class Player {
 public:
     virtual void normalTick();
-public:
-    ItemInstance* getSelectedItem()const;
+
+    ItemInstance* getSelectedItem() const;
 };

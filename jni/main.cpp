@@ -11,8 +11,7 @@
 
 Player* player = nullptr;
 
-std::string itos(int num)
-{
+std::string itos(int num) {
     std::stringstream ss;
     ss<<num;
     std::string str = ss.str();
@@ -20,27 +19,26 @@ std::string itos(int num)
 }
 
 void (*_Player_normalTick)(Player *);
-void Player_normalTick(Player * self)
-{
+void Player_normalTick(Player * self) {
     _Player_normalTick(self);
     player = self;
 }
 
 void (*_GuiData_tick)(GuiData *);
-void GuiData_tick(GuiData * self)
-{
-    _GuiData_tick(self);
+void GuiData_tick(GuiData * self) {
     ItemInstance* item = player -> getSelectedItem();
-    self -> showTipMessage(
-    "ID:"+itos(item->getId())+" Data:"+itos(item->getAuxValue())+" Name:"+item->getName()+
-    "\nCategoryName:"+item->getCategoryName()+"\n"+
-    "EnchantValue:"+itos(item->getEnchantValue())+" EnchantSlot:"+itos(item->getEnchantSlot())+"\n"+
-    "MaxDamage:"+itos(item->getMaxDamage())+" AttackDamage:"+itos(item->getAttackDamage()));
+    if(item -> getId() != 0) {
+        self -> showTipMessage(
+            "ID: " + itos(item->getId()) + " Data: " + itos(item->getAuxValue()) + " Name:" + item->getName() + "\n"+
+            "CategoryName: " + item->getCategoryName() + "\n"+
+            "EnchantSlot:" + itos(item->getEnchantSlot()) + " EnchantValue:" + itos(item->getEnchantValue()) + "\n"+
+            "MaxDamage:" + itos(item->getMaxDamage()) + " AttackDamage:" + itos(item->getAttackDamage())
+        );
+    }
 }
 
-JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
-{
-	MSHookFunction((void*)&GuiData::tick,(void*)&GuiData_tick,(void**)&_GuiData_tick);
+JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     MSHookFunction((void*)&Player::normalTick,(void*)&Player_normalTick,(void**)&_Player_normalTick);
-	return JNI_VERSION_1_2;
+    MSHookFunction((void*)&GuiData::tick,(void*)&GuiData_tick,(void**)&_GuiData_tick);
+    return JNI_VERSION_1_2;
 }

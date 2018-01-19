@@ -3,15 +3,13 @@
 #include <string>
 #include <memory>
 #include <chrono>
+#include <ratio>
 
 class Item;
 class CompoundTag;
 class Block;
-class UseAnimation;
-class TextureUVCoordinateSet;
 class Color;
 class Level;
-class ItemEnchants;
 class BlockEntity;
 class BlockSource;
 class Entity;
@@ -19,31 +17,30 @@ class Player;
 class Mob;
 class ItemUseCallback;
 class BlockID;
-class Input;
-class Output;
+class ItemEnchants;
+class IDataInput;
+class IDataOutput;
 
-namespace Json
-{
-	class Value;
-}
+namespace Json {
+    class Value;
+};
 
-class ItemInstance
-{
+class ItemInstance {
 public:
-	ItemInstance(Item const&, int, int, CompoundTag const*);
-    ItemInstance(Item const&);
+    ItemInstance(ItemInstance const&);
+    ItemInstance();
+    ItemInstance(int, int, int);
     ItemInstance(Item const&, int);
     ItemInstance(Item const&, int, int);
-    ItemInstance(Block const&);
-    ItemInstance(Block const&, int);
-    ItemInstance(Block const&, int, int);
-    ItemInstance(ItemInstance const&);
-    ItemInstance(int, int, int);
+    ItemInstance(Item const&);
     ItemInstance(int, int, int, CompoundTag const*);
-    ItemInstance();
+    ItemInstance(Block const&, int);
+    ItemInstance(Block const&);
+    ItemInstance(Block const&, int, int);
+    ItemInstance(Item const&, int, int, CompoundTag const*);
     ~ItemInstance();
-public:
-	std::string getHoverName() const;
+
+    std::string getHoverName() const;
     std::string getEffectName() const;
     bool isNull() const;
     void set(int);
@@ -58,21 +55,21 @@ public:
     int getMaxUseDuration() const;
     bool isHorseArmorItem() const;
     bool isArmorItem() const;
-    UseAnimation getUseAnimation() const;
+    int /* UseAnimation */ getUseAnimation() const;
     bool isGlint() const;
     bool hasCustomHoverName() const;
-    TextureUVCoordinateSet const& getIcon(int, bool) const;
+    void* /*TODO*/ getIcon(int, bool) const;
     std::string getName() const;
     Color getColor() const;
     int getMaxDamage() const;
     int getDamageValue() const;
     void* getPickupPopPercentage() const;
     bool isDamaged() const;
-    bool isStackedB() const;
-    bool matches(ItemInstance const&) const;
-    void setUse(std::unique_ptr<CompoundTag,std::default_delete<CompoundTag> >);
+    bool isStackedByData() const;
+    void matches(ItemInstance const&) const;
+    void setUserData(std::unique_ptr<CompoundTag, std::default_delete<CompoundTag> >);
     void setShowPickUp(bool);
-    void setPickupTime(std::chrono::time_point<std::chrono::_V2::steady_clock,std::chrono::duration<long long,std::ratio<1ll, 00ll> > >);
+    void setPickupTime(std::chrono::time_point<std::chrono::_V2::steady_clock, std::chrono::duration<long long, std::ratio<1ll, 1000000000ll> > >);
     void retrieveIDFromIDAux(int);
     void retrieveAuxValFromIDAux(int);
     void retrieveEnchantFromIDAux(int);
@@ -80,18 +77,19 @@ public:
     bool isStackable() const;
     int getPickupTime() const;
     bool isDamageableItem() const;
-    int getIdAuxEnchanted() const;
-    bool matchesItem(ItemInstance const&) const;
+    void* getIdAuxEnchanted() const;
+    void matchesItem(ItemInstance const&) const;
     int getMaxStackSize() const;
     int getIdAux() const;
     bool isLiquidClipItem() const;
-    void* getUse() const;
-    std::string getFormattedHovertext(Level&, bool) const;
-    bool hasUse() const;
-    ItemEnchants& getEnchantsFromUse() const;
-    void addCustomUse(BlockEntity&, BlockSource&);
+    void* getUserData() const;
+    std::string const& getFormattedHovertext(Level&, bool) const;
+    bool hasUserData() const;
+    void* getEnchantsFromUserData() const;
+    void addCustomUserData(BlockEntity&, BlockSource&);
     int getRawNameId() const;
-    void addComponents(Json::Value const&,std::string&);
+    void addComponents(Json::Value const&, std::string&);
+    int getDescriptionId() const;
     void clone() const;
     void remove(int);
     void fromTag(CompoundTag const&);
@@ -118,24 +116,24 @@ public:
     int getAttackDamage() const;
     void releaseUsing(Player*, int);
     void useTimeDepleted(Level*, Player*);
-    void hurtEnemy(Mob*,Mob*);
+    void hurtEnemy(Mob*, Mob*);
     void startCoolDown(Player*) const;
     float getDestroySpeed(Block const&) const;
     bool canDestroySpecial(Block const&) const;
-    std::string toString() const;
+    void toString() const;
     void use(Player&);
     void useOn(Entity&, int, int, int, signed char, float, float, float, ItemUseCallback*);
-    void mineBlock(BlockID, int, int, int,Mob*);
+    void mineBlock(BlockID, int, int, int, Mob*);
     void setPickupTime();
     void componentsMatch(ItemInstance const&) const;
-    void hasSameUse(ItemInstance const&) const;
-    void saveEnchantsToUse(ItemEnchants const&);
-    void deserializeComponents(Input&);
+    bool hasSameUserData(ItemInstance const&) const;
+    void saveEnchantsToUserData(ItemEnchants const&);
+    void deserializeComponents(IDataInput&);
     std::string getCustomName() const;
     std::string getCategoryName() const;
     bool isMusicDiscItem() const;
-    void serializeComponents(Output&) const;
-    bool hasCompoundTextUse() const;
+    void serializeComponents(IDataOutput&) const;
+    bool hasCompoundTextUserData() const;
     void setJustBrewed(bool);
     void _initComponents();
     void _loadComponents(CompoundTag const&);
@@ -151,18 +149,17 @@ public:
     bool canPlaceOn(Block const*) const;
     bool isFullStack() const;
     bool hasComponent(std::string const&) const;
-    bool _hasComponents() const;
+    void _hasComponents() const;
     int getEnchantSlot() const;
     void _saveComponents(CompoundTag&) const;
-    int getDescriptionId() const;
     bool isEquivalentArmor(ItemInstance const&) const;
-    void* getNetworkUse() const;
-    std::string _getHoverFormattingPrefix() const;
-public:
-	static ItemInstance* EMPTY_ITEM;
-	static std::string TAG_ENCHANTS;
-	static std::string TAG_DISPLAY;
-	static std::string MAX_STACK_SIZE;
+    void* getNetworkUserData() const;
+    void* _getHoverFormattingPrefix() const;
+
+    static void* EMPTY_ITEM;
+    static std::string TAG_ENCHANTS;
+    static std::string TAG_DISPLAY;
+    static int MAX_STACK_SIZE;
     static std::string TAG_CAN_DESTROY;
     static std::string TAG_REPAIR_COST;
     static std::string TAG_CAN_PLACE_ON;
@@ -170,5 +167,4 @@ public:
     static std::string TAG_STORE_CAN_DESTROY;
     static std::string TAG_STORE_CAN_PLACE_ON;
     static std::string TAG_LORE;
-    
 };
